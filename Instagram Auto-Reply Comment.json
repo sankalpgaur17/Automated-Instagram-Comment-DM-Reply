@@ -1,0 +1,466 @@
+{
+  "name": "Instagram Auto-Reply Comment",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "meta-ig",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "aaea6f8b-8b4f-4495-ae28-e165056f5175",
+      "name": "Webhook",
+      "webhookId": "9602e52b-919a-4645-9a7a-380bf6fd0b15"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "46654a4a-ede7-4136-8dff-c1f8f4b5b4b4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "meta-ig",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        176
+      ],
+      "id": "5e998cde-37b9-4566-95dc-c6c4f6367a02",
+      "name": "Webhook1",
+      "webhookId": "9602e52b-919a-4645-9a7a-380bf6fd0b15"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85158302-acb7-4afc-b45c-48f5b9a104d5",
+              "name": "accountID",
+              "value": "={{ $json.body.entry[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "f346c8a7-0cad-452d-bf09-330e587b6db7",
+              "name": "username",
+              "value": "={{ $json.body.entry[0].changes[0].value.from.username }}",
+              "type": "string"
+            },
+            {
+              "id": "5544b2c2-0415-496a-ab9f-cfc14e49f4de",
+              "name": "mediaID",
+              "value": "={{ $json.body.entry[0].changes[0].value.media.id }}",
+              "type": "string"
+            },
+            {
+              "id": "c3847720-4ab3-474e-b04a-53c818f5ebf3",
+              "name": "fromID",
+              "value": "={{ $json.body.entry[0].changes[0].value.from.id }}",
+              "type": "string"
+            },
+            {
+              "id": "d8c50761-d958-4160-b011-90b27a6fde26",
+              "name": "commentID",
+              "value": "={{ $json.body.entry[0].changes[0].value.id }}",
+              "type": "string"
+            },
+            {
+              "id": "1e2615a4-7fbd-4642-ab1d-f4a03b078270",
+              "name": "comment",
+              "value": "={{ $json.body.entry[0].changes[0].value.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        176
+      ],
+      "id": "0de177e1-23f1-447d-b564-8540e3def68d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "290096bb-3b66-4d3d-ad61-b04cbd694383",
+              "leftValue": "={{ $json.fromID }}",
+              "rightValue": "={{ $json.accountID }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        176
+      ],
+      "id": "89993d82-8bc1-4d12-bacc-a2e892fec8db",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v23.0/{{ $json.commentID }}/replies",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=@{{ $json.username }} Please check your DM ☺  "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        32
+      ],
+      "id": "05de0b21-13ea-44cf-bfe9-438e3d8cac71",
+      "name": "HTTP Request",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "P23EzfHCgbeBBIxw",
+          "name": "Facebook Graph n8n-post"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/17841466971787158/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer IGAFWa5kPwXItBZAE80RTgtUkNLblROMmllQVowanQybGVMV0dFVW9BdnExelJvZAmcwS19PN1d3ajEyYy0tUnVuMGwzQ2ZAmYzlmOG8xeTZAGa1VHXzd3c0p1ZAXlmdlpJQklGRE9TQzdZANEk4ZA2xSa1ptbDZAJM3B5aFpDX2pGUHg0YwZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={   \n  \"recipient\": {     \n    \"comment_id\": \"{{ $json.commentID }}\"   },\n  \"message\":{     \n    \"text\": \"{{ $json.DM }}\"   } \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        224
+      ],
+      "id": "bd092927-a29a-49e4-a943-028565fe5c72",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1120,
+        96
+      ],
+      "id": "4312f8f5-042c-4018-b9cb-4d4ba9109298",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4",
+          "mode": "list",
+          "cachedResultName": "Topic",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1727753224,
+          "mode": "list",
+          "cachedResultName": "carousel",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AritTwvusrFNnHrTuYHNRvEaS9w4PxY50O3M9xLUEq4/edit#gid=1727753224"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $json.mediaID }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        448,
+        208
+      ],
+      "id": "3b0c18d0-9da9-40a9-8cb4-cc548a73d8c2",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "54w9vcN80HDUT51i",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        544,
+        368
+      ],
+      "id": "615b2d8b-4477-468e-ba8f-6b3005317064",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca57d704-3732-4d70-bba1-67ac3ea4ad4d",
+              "name": "commentID",
+              "value": "={{ $json.commentID }}",
+              "type": "string"
+            },
+            {
+              "id": "9bb4add6-72a7-49aa-85e9-7377b4ff7dc2",
+              "name": "=DM",
+              "value": "={{ $json['DM Details'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        368
+      ],
+      "id": "d9595a62-ab8e-4634-9f62-a928e53eaf54",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "connection": "upgrade",
+            "host": "x7y9z2a5b8c1d3e6f4.dailyallday.in",
+            "x-real-ip": "69.171.251.9",
+            "x-forwarded-for": "69.171.251.9",
+            "x-forwarded-proto": "https",
+            "content-length": "308",
+            "x-hub-signature": "sha1=0ba8e4bbd749ef43403abd431913a181b479c130",
+            "x-hub-signature-256": "sha256=7bfeb9db975c47a6e22d0198c80b90650328bb39cd2dda42c9a79c4cfe52a5df",
+            "content-type": "application/json",
+            "user-agent": "Webhooks/1.0 (https://fb.me/webhooks)",
+            "accept": "*/*"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "entry": [
+              {
+                "id": "17841466971787158",
+                "time": 1754843970,
+                "changes": [
+                  {
+                    "value": {
+                      "from": {
+                        "id": "2302238093567941",
+                        "username": "saaankalp.gaur"
+                      },
+                      "media": {
+                        "id": "18053386463431191",
+                        "media_product_type": "FEED"
+                      },
+                      "id": "17912047473187867",
+                      "text": "Shake"
+                    },
+                    "field": "comments"
+                  }
+                ]
+              }
+            ],
+            "object": "instagram"
+          },
+          "webhookUrl": "https://x7y9z2a5b8c1d3e6f4.dailyallday.in/webhook/meta-ig",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2a1c19ad-3846-4787-bb6b-165938bb6a88",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c6fbe303b567ca704776106941d288c1c745876309c8b4f0a853d8ce9fde8fc2"
+  },
+  "id": "p9urFW6un7KBZ1PP",
+  "tags": []
+}
